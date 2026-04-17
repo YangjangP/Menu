@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Serif+KR:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif KR', serif;
+            background-color: #eceadd;
+            color: #312e2b;
+        }
+        
+        ::selection {
+            background-color: #dcd7ca;
+            color: #1a1918;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        .font-cursive {
+            font-family: 'Great Vibes', cursive;
+        }
+
+        .menu-paper {
+            background-color: #fdfcf8;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05), inset 0 0 20px rgba(0,0,0,0.02);
+            position: relative;
+        }
+        .menu-paper::after {
+            content: '';
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid #e6e4d5;
+            pointer-events: none;
+        }
+
+        .menu-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            color: #b0aba6;
+        }
+        .menu-divider::before, .menu-divider::after {
+            content: '';
+            height: 1px;
+            width: 60px;
+            background-color: #e6e4d5;
+            margin: 0 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 소설 본문 스타일 */
+        .novel-text {
+            line-height: 2.2;
+            text-align: justify;
+            word-break: break-all;
+            /* 페이지 전환 시 부드러운 효과 */
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .novel-text p {
+            text-indent: 1em; /* 들여쓰기 원복 */
+            margin-bottom: 0.5rem;
+            transition: color 0.4s ease, font-style 0.4s ease;
+        }
+
+        /* 첫 페이지(서두/번외) 스타일 연출 */
+        .novel-text.prologue-mode {
+            padding-top: 3rem;
+            padding-bottom: 2rem; 
+            position: relative;
+        }
+
+        .novel-text.prologue-mode p:last-child {
+            margin-bottom: 0; 
+        }
+
+        /* 첫 페이지 하단 메뉴판 장식 */
+        .novel-text.prologue-mode::after {
+            content: '··· ❖ ···';
+            position: absolute;
+            bottom: -0.5rem; 
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #b0aba6;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            line-height: 1;
+        }
+
+        .novel-text.prologue-mode p {
+            color: #57534e; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-6 md:py-12 px-4 md:px-0">
+
+    <!-- 메인 메뉴판 화면 -->
+    <main id="menu-view" class="w-full max-w-2xl fade-in menu-paper py-12 md:py-16 px-6 md:px-12 my-2 md:my-6">
+        <header class="text-center mb-12 md:mb-16 relative z-10">
+            <h1 class="text-5xl md:text-7xl font-cursive tracking-widest mb-4 text-gray-800 mt-4 md:mt-0">Menu</h1>
+            <div class="menu-divider"><span class="text-[12px]">❖</span></div>
+        </header>
+
+        <section class="mt-8 md:mt-12 mb-8 relative z-10">
+            <ul id="menu-list" class="space-y-12 md:space-y-16">
+                <!-- JS로 렌더링 -->
+            </ul>
+        </section>
+    </main>
+
+    <!-- 소설 읽기 화면 -->
+    <article id="reading-view" class="w-full max-w-2xl hidden opacity-0 transition-opacity duration-500 menu-paper py-10 md:py-16 px-6 md:px-16 my-2 md:my-6">
+        
+        <!-- 상단 돌아가기 버튼 (빠른 이탈용) -->
+        <nav class="mb-8 relative z-10">
+            <button onclick="showMenu()" class="text-[13px] md:text-sm text-gray-400 hover:text-gray-800 transition-colors flex items-center group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                메뉴 접기
+            </button>
+        </nav>
+
+        <!-- 소설 본문 -->
+        <div id="chapter-content" class="novel-text text-[13.5px] md:text-[17px] text-gray-800 relative z-10 mt-4">
+            <!-- JS로 페이지별 렌더링 -->
+        </div>
+
+        <!-- 하단 페이지네이션 (책장 넘기기) -->
+        <nav class="mt-6 pt-5 border-t border-gray-200/60 relative z-10 flex justify-between items-center">
+            <button id="prev-btn" class="text-[13px] md:text-sm text-gray-500 hover:text-gray-800 transition-colors tracking-widest disabled:opacity-30 disabled:cursor-not-allowed">
+                &larr; 이전 장
+            </button>
+            <span id="page-indicator" class="text-xs md:text-sm text-gray-400 tracking-[0.2em] font-light">
+                - 1 / 1 -
+            </span>
+            <button id="next-btn" class="text-[13px] md:text-sm text-gray-500 hover:text-gray-800 transition-colors tracking-widest disabled:opacity-30 disabled:cursor-not-allowed">
+                다음 장 &rarr;
+            </button>
+        </nav>
+    </article>
+
+    <script>
+        const MENU_INFO = [
+            {
+                id: 'SALVATION',
+                title: 'SALVATION',
+                description: 'Faintly throbbing life<br>Gentle Whispers<br>Warm grilled sausage'
+            },
+            {
+                id: 'DEPRIVATION',
+                title: 'DEPRIVATION',
+                description: 'Aged wine with pairing delicacies<br>Seashell bereft of its owner'
+            },
+            {
+                id: 'ETERNITY',
+                title: 'ETERNITY',
+                description: 'Custard cream crepe cake<br>layered with memories and affection'
+            }
+        ];
+
+        const NOVEL_CONTENTS = {
+            'SALVATION': `당신이 전하는 구원의 온도를 나는 누구보다 더 잘 알고 있다.
+그것은 미약하게 약동하는 생명력이었고, 다정한 속삭임이었고, 사람의 체온처럼 따스해서. 어떤 시대에서든 당신을 구원자로 여기고 따르는 사람들이 생겨날 수밖에 없는 것도 어쩌면 당연한 일이었다. 하지만 그 도움이라는 게 그리 간단한 개념이 아니잖아. 원하는 것을 손에 쥐여 주는 일. 그것이 다수가 원하는 구원의 형태이나 당신은 그저 차가운 손을 마주 잡는다.
+그러니 당신이 전하는 구원의 온도가 언제나 따스하지만은 않음을, 나는 누구보다 더 잘 알고 있었다.
+---
+
+“여기는 여전히 장사가 안되나 보네.”
+“그게 오랜만에 본 친구에게 건네는 인사말이야? 매정하기도 해라.”
+
+친구? 마치 처음 듣는 단어라는 듯 고개를 갸웃한 제멜바이스가 그 이상의 대꾸도 없이 무거운 가방을 내려놓으며 바 테이블에 앉는다. 낡았지만 잘 관리된 목제 테이블의 반질반질한 표면은 가게 내부의 유일한 광원인 촛불의 빛을 부드럽게 반사한다. 역시 채광이 문제야. 햇볕만 잘 들어와도 사람들이 더 많이 찾을걸. 그것이 진심 어린 충고인지 비꼬는 농담인지 구분하는 건 그리 어렵지 않았다. 발렌티나는 고용인에게 뭐라도 가져오라는 듯 성의 없이 손짓하고는 이 버릇없는 방문자의 옆자리에 앉아 거리를 좁혀온다. 당신이 굳이 이곳에 찾아왔다는 건 뭔가 재밌는 이야깃거리를 물고 온 거겠지. 노골적인 기대감을 숨기지 않고 자신을 바라봐오는 흡혈귀에게 제멜바이스는 포기하라는 듯 빠르게 손을 내젓는다.
+---
+
+“난 그저 재단의 징계 처분을 받고 온 것뿐이야.”
+“징계 처분?”
+“일하다 작은 사고가 있었거든.”
+
+그래서 귀찮은 처분 명령 대신 당신을 재단에 영입해 오겠다고 회유했지. 내뱉는 말과는 달리 전혀 설득의 의지가 없어 보이는 그녀가 종업원에게 받은 와인잔을 가볍게 흔들었다. 적포도주의 옅은 향은 잔의 표면을 타고 올라와 후각이 예민한 두 흡혈귀의 코끝을 스친다. LP판에서 흘러나오는 유행 지난 음악. 촛불의 빛에 의지해야 하는 캄캄한 가게 내부. 유리병에 꽂혀 있는 마른 꽃들의 잎은 손끝이 닿는 순간 부서져 버릴 것처럼 창백하고, 막 조리해 나온 따뜻한 소시지에서만 온기와 수분을 느낄 수 있는 기묘한 공간. 그 공간에 어떠한 위화감이나 불편함도 느낄 수 없었던 제멜바이스는 포크로 소시지를 쿡 찌르며 말을 이었다. 다시 말해, 시간을 죽이러 온 거야. 발렌티나는 이 짧은 대사가 너무나도 장명종스럽다고 생각했다.
+사실 발렌티나도 제멜바이스가 언급한 ‘사고’에 대해 모르는 것은 아니었다. 제법 떠들썩했던 사건이 아니었는가.
+---
+
+재단 내부에서 실종된 로렐라이는 헝가리의 한 성당 내부에서 신부의 익사체와 함께 발견됐다. 그녀의 정신 상태는 매우 불안정했고, 익사한 신부가 로렐라이의 작은 소라 목걸이를 지니고 있었기에, 그리고 무엇보다 이미 로렐라이의 능력이 당신의 의도와는 달리 사람들을 해칠 수 있다는 것이 기록을 통해 알려져 있었기 때문에 그녀는 곧장 피의자 신분으로 재단에 수감되었다. 네가 야기한 일은 네가 수습해. 라는 린지 여사의 단호한 말을 듣고 성당에서 그녀를 직접 찾아낸 사람이 제멜바이스였다.
+그대로 수사가 종료된다면 로렐라이는 ‘봉인’된 자의 신분으로 재단에 평생 갇히게 되겠지. 정보원을 통해 전해 들은 소식은 여기까지였지만 일주일 뒤 진범이 따로 잡혔다는 이야기를 다시 듣게 된다. 신부를 죽인 건 그의 얄팍한 구원의 말에 삶이 농락당했다고 느꼈던 한 남성이었으며, 실행범을 설득해 로렐라이에게 누명을 씌운 건 재단의 한 말단 직원이었다고. 그는 이런 방법을 써서라도 저 가짜 구원이 사람에게 헛된 기대를 안겨주는 위험한 존재라는 사실을 알려야만 했다고 증언했다. 조잡하기 짝이 없는 이 일련의 사건 위에는 구원자에 대한 짙은 원망만이 선명하게 드러나 있다.
+---
+
+“그래서 너는 왜 처분을 받은 건데?”
+“그 진범이 내 앞에서 스스로 목숨을 끊었으니까.”
+
+그것은 정말로 ‘작은 사고’였다. 이미 물증과 증언까지 확보한 상태에서 이 사람이 죽어버린다 한들 딱히 달라지는 건 없어. 명확한 사실에 긴장을 풀고 재단으로 연락을 취하려던 순간 그는 목적 없이 차가운 강물로 뛰어들었고, 희생되었던 신부처럼 익사체의 상태로 발견되었다. 제멜바이스의 어깨 위에는 방조죄라는 죄 몫의 무게가 얹어졌다.
+사람 간의 일은 의도대로 흘러가는 게 단 하나도 없지. 그것의 가장 큰 원인이 커뮤니케이션의 방식에 있다고 말하는 사람들도 있지만, 사실 진짜 원인은 사람들 모두가 각자 ‘원하는 것’이 있다는 거야. 모든 비극은 당신이 원하는 것을 타인에게서 찾을 때 일어난다. 그러니 언제나 따스하지만은 않은, 오히려 당신 손의 온도와 함께 차가워지는 구원 따위에 기댈 생각은 하면 안 돼.
+너는 네가 구원해. 제멜바이스가 그에게 남겼던 말은 이 마지막 문장뿐이었다.
+---
+
+“그런 생각이라면 로렐라이의 박애주의적 행보를 모두 막아내는 게 낫지 않아?”
+“나는 딱히 그녀의 행위를 부정하는 것이 아니야.”
+“이런 귀찮은 일이 또 일어날 텐데.”
+“’도움’을 받는 사람도 분명 존재하거든.”
+
+나처럼. 제멜바이스는 짧게 말을 마무리하며 포크를 내려놓았다. 묵직한 가방을 다시 어깨에 메고 자리를 일어서는 그녀를 바라보며 발렌티나는 가엾다는 듯 웃었다. 너는 정말 번거롭고 귀찮음을 자처해서 살아가는구나. 그렇게까지 해서 지키고 싶은 건 단단한 이성이 아닌 유약한 감정이라는 걸 본인도 알고 있을 텐데. 하지만 장명종의 입장에서 그런 희귀한 샘플을 눈앞에 두고 즐기지 않을 이유는 없었다.
+
+“또 올게. 라는 말은 안 해줄 거야?”
+“징그러운 소리 하지 마. 그리고 소시지는 최악이었어. 메뉴를 바꾸던가 해.”
+
+제멜바이스는 뒤돌아보지도 않고 손을 내저었다.`,
+
+            'DEPRIVATION': `무서워? 자신을 단단하게 품에 가둬오는 당신의 몸짓에도 소녀는 놀라지 않고 그렇게 물었다. 그래. 나는 무서워하고 있어. 언제부턴가 나는 너를 잃고 싶지 않다고 생각하고 있었다. 나지막이 이어지는 고백에 소녀는 잠시 눈을 동그랗게 뜨더니, 당신의 등에 다정하게 손을 올리며 속삭였다. 제멜바이스. 나는 ‘잃는’ 것이 아니야. 이 짧은 대답은 잔인하게도, 사람은 사람을 소유할 수 없다는 당연한 진리로 이어진다. 당신은 나의 것이 아니지. 그러니 나는 너를 잃는 게 아니야. 그렇다면 너의 상실은 어떻게 다뤄야 할까.
+---
+  
+시대가 바뀌어도 늘 같은 자리를 지키고 있는 한 흡혈귀의 가게는 폭풍우 면역 지대에 속한 게 아닌지 하는 터무니없는 상상마저 불러일으킨다. 아무런 영양가 없는 생각에 고개를 저으며 무거운 문을 열고 들어가니, 따스한 햇볕이 커다란 창문을 통해 들어와 테이블과 좌석을 데우고 있는 광경이 보인다. 오랜만이야. 채광이 정말 좋은 가게지. 자연광이 닿지 않는 구석 자리에 앉아 있던 발렌티나가 연신 하품을 이어가며 인사 대신 장난기 어린 말을 건넨다. 잠시 말을 잃은 제멜바이스는 작게 한숨 내쉬고 마찬가지로 그늘진 바의 구석에, 그녀의 옆에 앉는다. 비어 있던 의자 위에 내려놓은 가방은 이전보다 훨씬 가벼워 보였다.
+  
+“무슨 일이야? 또 사고 치고 시간을 죽이러 온 사람 같진 않은데.”
+“….”
+“음?”
+
+---
+
+우수한 에이전시 팀장 출신의 흡혈귀가 드물게도 바로 말을 잇지 못하고 있다. 손끝의 움직임과 속눈썹의 미세한 떨림을 시선의 끝으로 쫓으며 발렌티나는 빈 와인잔을 그녀에게로 밀어낸다. 침묵 외에는 아무것도 담겨있지 않은 잔 위에 이윽고 차분한 목소리가 부드럽게 흘러나온다.
+  
+“…로렐라이가 폭풍우에 휩쓸렸어.”
+“….”
+  
+그렇구나. 그건, 사실 냉정하게 생각해 보면 그리 놀라운 일도 아니지. 그 어린 구원자를 옆에서 지켜봐 왔던 흡혈귀는 언젠가 당신도 강물에 뛰어들 존재임을 직감하고 있었다. 그러한 직감은 두텁게 쌓아 올린 경험을 기반으로 한 본능적인 판단이었고, 당신에게 가졌던 애정의 크기와는 무관한 감각이다. 그녀는 늘 더러운 흙 위에 기꺼이 맨발을 내디뎠지만 언제나 현실이라는 범주에 속하지 않는 듯이 구는 기묘한 생명체였으니까. 
+
+---
+
+오히려 지금 옆에서 말을 삼키고 있는 또 다른 흡혈귀가 구원자를 땅 위에 붙들어 맨 유일한 범인이었다. 당신이 흐려지는 것을 용납하지 않겠다는 듯 굴지 않았는가. 두 사람의 사이를 채우는 느리고 묵직한 호흡은, 이 말을 담담하게 꺼내기까지 얼마나 많은 시간이 얹어져야 했는지를 가늠케 하고 있었다. 화자는 영리하게도 그 문장에 자신의 감정을 내비치지 않았다. 제멜바이스는 종업원에 의해 채워지는 와인잔을 가만히 바라보다가, 내려두었던 가방 속에서 무언가를 꺼내 발렌티나에게 건네주었다.
+  
+“그래서 부탁을 하러 온 거야.”
+“이건 로렐라이가 가지고 다니던 소라잖아.”
+“그걸 맡아 줘. 내가 다시 가지러 올 때까지.”
+
+타임키퍼가 아주 중요한 정보를 가지고 왔어. 조만간 재건이든 재단이든 회복하기 어려운 수준으로 괴멸될 거야. 나도 목숨을 잃을지 모르지. 유언과 다름없는 말을 이어가며 흡혈귀는 적포도주를 입에 머금었고, 발렌티나는 상대의 언어가 자신의 손에 쥐고 있는 작은 소라의 안에 담기고 있다는 것을 깨닫는다. 이제 그 소라는 원래 주인의 목소리를 잃어버린 지 오래였다.
+ 
+---
+    
+“폭풍우가 끝나고, 너도 살아 있게 된다면 뭘 할 생각인데?”
+“알면서 묻는 것 같은데.”
+“본인 입으로 듣고 싶거든.”
+“…찾아봐야지. 어떤 모습으로 살고 있는지. 소라도 돌려주고 싶으니까.”
+  
+어쩌면 당신은 남을 구원하는 것을 포기하고, 혹은 구원할 생각조차 하지 못하고 누구보다 평범한 삶을 살아가고 있을지도 모른다. 어쩌면 당신은 물이 무서워 강도 바다도 가까이할 수 없는 사람일지도 모른다. 어쩌면 당신은 죄를 짓는 것을 두려워하는 사람일지도, 혹은 죄를 짓는 것에 아무런 거리낌이 없는 사람일지도 모른다.
+그런 당신이 ‘로렐라이’라고 할 수 있는 건지도, 모르겠다.
+제멜바이스도 그것쯤은 알고 있었다. 이건 이성적 판단이 아니었으니까.
+
+---
+  
+부탁을 전한 제멜바이스는 더 이상의 용건은 없다는 듯 반쯤 비워진 와인잔을 내려 두고 천천히 자리에서 일어났다. 안 되겠어. 단 게 없으니 도저히 들어가질 않아. 무언가에 대한 단호한 신앙이 묻어나는 볼멘소리에 웃음을 삼키던 발렌티나는, 이제 텅 비어버린 가벼운 가방을 어깨에 메고 떠나려는 그녀의 손목을 다정하게 잡고 마지막이 될 수 있는 제안을 건넸다.
+  
+“담배 하나 줄까?”
+“…난 담배 안 피워. 내가 아는 흡연자들은 모두 일찍 죽어버렸으니까.”
+“담배를 피우고도 지독하게 오래 살아있는 케이스가 있다는 걸 잊지 마.”
+  
+흡혈귀는 자신의 가슴을 톡톡 두드리며 얄궂게 웃었다. 이것만큼 상실을 이겨내기 좋은 도구는 없거든. 그녀가 미처 대꾸하기도 전에 발렌티나는 제멜바이스의 주머니에 담배 몇 개비를 쑤셔 넣는다. 잘 가, 친구. 죽지는 말고. 제멜바이스는 이제 뭐라 반응하기도 귀찮다는 듯 지체 없이 몸을 돌려 가게를 떠났다.`,
+
+            'ETERNITY': `이 앞으로 길고 긴 여정을 남겨둔 당신은 나에게 그동안 어떤 마음으로 시간을 흘려보내 온 건지 물어본 적이 있었다. 살아온 세월을 헤아리는 것을 그만둔 지 오래된 한 장명종은 눈을 가늘게 뜨고 무언가 곰곰이 생각하더니, 이내 옅게 웃으며 말을 잇는다. 굳이 말해주고 싶지 않네. 질릴 정도로 겪어보고 직접 알아내 봐. 무용한 대답을 들은 그녀는 기대하지도 않았다는 듯 낮게 한숨 쉬며 작은 소라를 돌려받았다.
+
+---
+   
+손님들로 꽤나 북적이는 가게 내부를 말없이 바라보며 제멜바이스는 자신이 제 손으로 문을 열고 들어간 곳의 간판을 재확인했다. 취향이 담뿍 들어간 가게 이름과 인테리어는 누가 봐도 당신의 것이 맞는데. 이렇게까지 해야 하는 지에 대한 약간의 지긋지긋함을 느낀 그녀가 몸을 돌리려는 찰나, 채광이 좋은 이 가게의 유일하게 그늘진 한 구석에서 누군가가 가볍게 손짓을 한다. 몇 십 년 만인데 이야기는 하고 가야지. 그러한 능글맞은 미소와 함께 가게의 주인이 반기고 있었다.
+제멜바이스는 어쩔 수 없다는 듯 모자를 가볍게 눌러쓰고 당신이 마련한 예약석으로 향했다. 늘 들고 다녔던 가방도 없는 그녀가 익숙하게 맞은 편에 앉는다.
+  
+“장사는 잘 되고 있나보네.”
+“덕분이지 뭐야. 너무 잘 되어서 좀 질리기도 해.”
+“그럼 때려치워.”
+
+---
+  
+그녀가 빳빳한 메뉴판을 훑어보는 동안 성의도 영양가도 없는 대화가 간략하게 이어지고, 제멜바이스가 무언가를 주문하고 나서야 흡혈귀는 본론으로 들어갔다.
+  
+“로렐라이는?”
+“응, 보내줬어. 오늘.”
+  
+이전과는 달리 당신의 목소리는 조금의 떨림도 묻어나지 않는다. 그녀는 익숙하게 주머니에서 담배 한 개비를 꺼내 입에 물었고, 사용감이 있는 낡은 라이터로 선단에 불을 붙였다. 옅게 흩어지는 담배의 연기가 상실이라는 감정을 대변한다. 익숙해져 버렸구나. 장명종처럼. 그것은 발렌티나의 독백이기도 했으며, 동시에 제멜바이스의 독백이기도 했다.
+  
+마지막 폭풍우 이후, 리버스된 당신을 찾는 건 생각보다 어렵지 않았어.
+그녀의 부모가 그녀를 ‘마도학자’로서 재단에 등록해 둔 자료가 있었던 것이다. 그 얇은 서류 한 장에 당신의 능력, 활동 범위, 간단한 이력 등의 정보가 기입되어 있어 제멜바이스는 그것을 구겨지지 않게 파일 사이에 끼워두었다. 이 파일 안에는 내가 알고 있는 로렐라이가 겹겹이 쌓여 있다. 그리고 그 위에 얹어진 새로운 종이 한 장이 현재를 살아가고 있는 새로운 당신이었다. 단편적인 정보를 한 층 한 층 쌓아 올리는 행위는 마치 돌탑을 쌓으면서 누군가에게 기도를 올리고 있는 행위와 유사한 점이 있다는 걸 제멜바이스는 부정할 수 없었다.
+
+---
+
+그리고 그녀는 아주 오랫동안 쓰지 않았던 연차를 내고 긴 휴가를 맞이했다. 당연하게도 로렐라이를, 지금은 다른 이름을 쓰고 있는 그녀를 찾아가기 위해. 프랑스 인근의 지부로 이동해 기차를 타고 그녀가 살고 있는 작은 시골 마을까지. 눈앞에서 빠르게 스쳐 지나가는 푸릇한 나무들과 들판을 보며 제멜바이스는 두터운 파일을 무릎 위에 얹어 두고 자신이 무엇을 하려 하는지에 대한 고찰을 이어갔다. 이성이 도저히 자신의 행위를 따라가지 못하고 있었다. 새삼스럽게 뭘. 무릎 위에 얹어둔 당신이 너무나 무거워서 그래. 그러한 이유로 스스로를 설득한다. 빌어먹을 미치광이 마도학자가 따로 없었다.
+봄의 온기에 데워진 따스한 바람이 기차역을 빠져나오는 제멜바이스의 이마를 부드럽게 스치고, 얼마 지나지 않아 그녀는 그렇게 찾아 헤매던 당신의 집 앞에 도착하였다. 문 건너편에선 차가워진 소라껍데기 속의 희미해진 노랫소리가 아닌, 생생하게 물결치는 노랫소리가 들린다. 그녀는 본능적으로 그것이 당신의 것임을 알았다.
+
+---
+  
+“말했어?” 발렌티나가 물었다.
+“말하지 못했지.” 제멜바이스는 대답했다.
+  
+그 어떤 것도 설명할 수 없는 이상한 관계. 그러나 리버스를 했다고 해도 당신이 유독 모든 사람에게 다정했다는 사실은 변하지 않았는지, ‘로렐라이였던 그녀’는 주변에 둘러앉은 아이들뿐만 아니라 처음 보는 제멜바이스에게도 손을 내밀었다. 그저 당신이 잘 살아가고 있는지 알고 싶었을 뿐이던 재단의 사람은 머뭇거리며 그 손을 맞잡는다. 그리고 그들은 다정한 방식으로 가까워졌다.
+길고 긴 휴가를 그 마을에서 보내고 복귀한 제멜바이스는 주기적으로 그녀를 찾아갔다. 소녀였던 당신은 별 탈 없이 어른이 되어 마을의 교회에서 일을 하기 시작했다. 키가 더 크지 못한 것이 못내 아쉬워 보였지만. 그런 익숙한 형태로 낯선 모습을 보일 때, 그리고 결국 당신이 나에게 입을 맞춤으로써 모두에게 균일하지 않은 애정의 형태를 증명하려 하였을 때, 제멜바이스는 무릎 위에 얹어 두었던 파일이 조금씩 두터워지고 있음을 깨달았다. 여전히 그것은 무거웠다. 흡혈귀는 본인과 달리 따스하게 살아 숨 쉬는 당신의 품을 조심스럽게 벗어나며 고개를 저었다.
+
+---
+
+그 거절이 당신에게 상처가 되었을지 모르겠어. 하지만 잠시 어색한 침묵 끝에 어른이 된 소녀는 맑게 웃었고, 그들의 관계는 평소와 같이 천천히 흘러갔다.
+소녀가 세월과 함께 자연스럽게 찾아온 삶의 마지막을 마주할 때까지.
+  
+이제 알겠다. 당신은 흡혈귀군요.
+라인강의 강물을 닮은 눈동자와 마주하며 제멜바이스는 옅게 웃었다. 깨닫는 게 너무 느리네. 부드러운 말투로 답해주면 죽음을 눈앞에 둔 그녀 또한 소녀처럼 웃어 보였다. 잘게 떨리는 따스한 손이 제멜바이스의 뺨을 감싸자 아주 서늘한 체온이 손바닥을 통해 전해진다. 하지만 당신은 맞닿는 온도만큼 차가운 사람이 아니었어. 언제부턴가 내 앞에 나타나 따스하게 곁을 지켜준 사람. 그리고 내가 아닌 누군가를, 나를 통해 그리워한 사람. 그 마음에 상처 같은 건 받아본 적이 없다. 누구보다 다정하게 살아간 단명종은 당신에게 미처 닿지 못하는 흐릿한 말을 마지막으로 남긴 채 장명종의 시선 속에서 숨을 거두었다. 고마워. 혹은 사랑했어. 둘 중 어느 쪽이었는지 흡혈귀는 알 수 없었다. 그저 그동안 돌려줄 수 없었던 소라를 품에 안겨줄 뿐이었다.
+
+---
+  
+“하지만 내가 찾고 싶던 로렐라이는 폭풍우에 휩쓸린 순간 죽었다고 봐야겠지.”
+“그래, 그럼에도 넌 굳이 리버스된 로렐라이를 찾았잖아.”
+“그 영혼만이라도 찾고 싶었으니까.”
+  
+아니. 너는 그리워서 견딜 수 없었던 거야. 발렌티나는 마지막 문장을 작은 접시에 플레이팅된 달콤한 디저트와 함께 삼켰다. 영혼만이라도 찾고 싶었다면 가까워질 필요가 없잖아. 결국 너는, 소중한 걸 네 손으로 다시금 만든 뒤 그것의 상실을 반복하여 맞이하고 있다. 어쩌면 그게 장명종이 시간을 죽이는 방법일지도 몰라. 그러한 짓궂은 독백은 당신의 것으로 남긴 채, 피우던 담배를 비벼 끈 제멜바이스 또한 포크를 들어 겹겹이 쌓여 있는 크레이프의 모퉁이를 잘라 입에 넣었다. 텁텁했던 입안에 달콤한 맛이 퍼진다.
+시간과 기억이 한 겹씩 섬세하게 쌓아 올려진 그 케이크가 제법 마음에 들었던 그녀는 예정했던 것보다 더 오래 그곳에 앉아 있기로 한다. 찬찬히 시간을 죽여가면서.
+`
+        };
+
+        // --- 페이지네이션 관련 변수 ---
+        let currentPages = [];
+        let currentPageIndex = 0;
+
+        function renderMenuList() {
+            const menuList = document.getElementById('menu-list');
+            MENU_INFO.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'group cursor-pointer flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-1 relative z-10';
+                li.onclick = () => showChapter(item.id);
+                
+                li.innerHTML = `
+                    <h2 class="text-lg md:text-xl tracking-widest font-semibold uppercase mb-3 md:mb-4 text-gray-800 group-hover:text-black">${item.title}</h2>
+                    <p class="text-sm md:text-base text-gray-500 italic max-w-md leading-loose group-hover:text-gray-700 px-2">${item.description}</p>
+                `;
+                menuList.appendChild(li);
+            });
+        }
+
+        function showChapter(id) {
+            const rawContent = NOVEL_CONTENTS[id] || "내용이 아직 준비되지 않았습니다.";
+            
+            // '---' 를 기준으로 사용자가 직접 페이지를 나눌 수 있도록 변경
+            const pageTexts = rawContent.split(/^\s*---\s*$/m);
+            
+            currentPages = [];
+
+            pageTexts.forEach(pageText => {
+                const lines = pageText.split('\n');
+                let currentPageHTML = '';
+                
+                lines.forEach(line => {
+                    const text = line.trim();
+                    if (text === '') {
+                        currentPageHTML += '<div class="h-2"></div>'; // 빈 줄 여백
+                        return;
+                    }
+                    
+                    // Salvation 등 중앙 정렬 특수 처리 제거. 모두 일반 문단으로 취급.
+                    currentPageHTML += `<p>${text}</p>`;
+                });
+                
+                if (currentPageHTML) {
+                    currentPages.push(currentPageHTML);
+                }
+            });
+
+            currentPageIndex = 0;
+            renderCurrentPage();
+
+            // 화면 전환
+            const menuView = document.getElementById('menu-view');
+            const readingView = document.getElementById('reading-view');
+
+            menuView.style.opacity = '0';
+            setTimeout(() => {
+                menuView.classList.add('hidden');
+                readingView.classList.remove('hidden');
+                setTimeout(() => {
+                    readingView.style.opacity = '1';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+            }, 300);
+        }
+
+        // 현재 페이지 렌더링 함수
+        function renderCurrentPage() {
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = currentPages[currentPageIndex];
+            
+            // 첫 페이지일 경우 서두(프롤로그) 연출 클래스 추가
+            if (currentPageIndex === 0) {
+                contentDiv.classList.add('prologue-mode');
+            } else {
+                contentDiv.classList.remove('prologue-mode');
+            }
+            
+            document.getElementById('page-indicator').innerText = `- ${currentPageIndex + 1} / ${currentPages.length} -`;
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            // 버튼 상태 업데이트
+            prevBtn.disabled = currentPageIndex === 0;
+            prevBtn.onclick = () => turnPage(-1);
+
+            if (currentPageIndex === currentPages.length - 1) {
+                // 마지막 페이지인 경우 다음 장 버튼이 메뉴판 덮기로 변환됨
+                nextBtn.innerHTML = '메뉴판 덮기 &times;';
+                nextBtn.onclick = showMenu;
+            } else {
+                nextBtn.innerHTML = '다음 장 &rarr;';
+                nextBtn.onclick = () => turnPage(1);
+            }
+        }
+
+        // 페이지 넘김 (페이드 인/아웃 효과 포함)
+        function turnPage(delta) {
+            const newIndex = currentPageIndex + delta;
+            if (newIndex < 0 || newIndex >= currentPages.length) return;
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.style.opacity = '0'; // 페이드 아웃
+
+            setTimeout(() => {
+                currentPageIndex = newIndex;
+                renderCurrentPage();
+                contentDiv.style.opacity = '1'; // 페이드 인
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // 상단 정렬
+            }, 300);
+        }
+
+        function showMenu() {
+            const menuView = document.getElementById('menu-view');
+            const readingView = document.getElementById('reading-view');
+
+            readingView.style.opacity = '0';
+            setTimeout(() => {
+                readingView.classList.add('hidden');
+                menuView.classList.remove('hidden');
+                setTimeout(() => {
+                    menuView.style.opacity = '1';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+            }, 300);
+        }
+
+        window.onload = renderMenuList;
+    </script>
+</body>
+</html>
